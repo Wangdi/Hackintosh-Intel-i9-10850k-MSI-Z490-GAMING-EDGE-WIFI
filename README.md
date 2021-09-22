@@ -84,7 +84,7 @@ Updated to Big Sur 11.6
     - Some ports may be connected internally eg. MSI Mystic Light
     - Some are connected directly on Motherboard eg. Corsair iCUE H150i RGB PRO XT AIO CPU Cooler
     - Select in-use and desired ports, set corresponding types then generate the kext
-- **Memory** works, also stable with OC 4266MHz 18-20-20-42
+- **Memory** works, also stable with OC 4266MHz 168-20-20-40
 - **Hard Disk**
     - NVMe and HDD works fine
     - TRIM support for SATA SSD is turned off by default. Its performance may be affected. However, turning it on may be unstable. To turn on TRIM
