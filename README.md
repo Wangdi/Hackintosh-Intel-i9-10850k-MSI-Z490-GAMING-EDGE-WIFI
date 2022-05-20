@@ -1,11 +1,5 @@
 # Hackintosh-Intel-i9-10850k-MSI-Z490-GAMING-EDGE
 
-Created: September 17, 2021 12:20 PM
-Property: May 20, 2022 2:33 PM
-Tags: Optimization
-
-# Hackintosh-Intel-i9-10850k-MSI-Z490-GAMING-EDGE
-
 ---
 
 This repository contains OpenCore configuration files for installing macOS Big Sur on an Intel 10th gen CPU and Z490 chipset build
