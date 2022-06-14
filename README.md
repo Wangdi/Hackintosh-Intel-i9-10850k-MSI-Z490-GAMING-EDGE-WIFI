@@ -2,7 +2,7 @@
 
 ---
 
-This repository contains OpenCore configuration files for installing macOS Big Sur on an Intel 10th gen CPU and Z490 chipset build
+This repository contains OpenCore configuration files for installing macOS on build with Intel 10th gen CPU and Z490 chipset
 
 ![about](images/about.png)
 
@@ -10,7 +10,7 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
 
 ## Bootloader
 
-[OpenCore](https://dortania.github.io/OpenCore-Install-Guide/) ~~0.7.2~~ 0.8.0
+[OpenCore](https://dortania.github.io/OpenCore-Install-Guide/) ~~0.7.2~~ 0.8.1
 
 ## Hardware
 
@@ -24,7 +24,7 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
     - ASMedia ASM3241 for USB 3.2 Gen 2x2 20Gbps Type-C
 - RAM: Crucial DDR4 3600MHz 8Gb x2
 - SSD: Toshiba Q200ex
-- Dual Display: HDMI WQHD 3440x1440 Monitor, DisplayPort 4k 3840x2160 Monitor
+- Dual Display: HDMI WQHD 3440x1440 Monitor, DisplayPort 4K 3840x2160 Monitor
 
 ## Working
 
@@ -35,10 +35,10 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
 - USB ports
 - Shutdown and Reboot
 - Sleep and Wake
+
+## Partially Working
+
 - DRM Apple Music Lossless
-
-## Not/Partially Working
-
 - DRM Video
 - HDMI / DP digital audio
 
@@ -49,10 +49,10 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
     `ifconfig en0 media 1000baseT`
     
 - **WIFI** using [AirportItlwm.kext](https://github.com/OpenIntelWireless/itlwm/releases)
-- **BT** using [IntelBluetoothFirmware.kext / IntelBluetoothInjector.kext](https://github.com/OpenIntelWireless/IntelBluetoothFirmware/releases)
-    - Updating to Monterey breaks BlueTooth setup, refer to [OC guide](https://dortania.github.io/OpenCore-Install-Guide/extras/monterey.html#bluetooth) to apply changes
+- **BT** using [IntelBluetoothFirmware.kext](https://github.com/OpenIntelWireless/IntelBluetoothFirmware/releases)
+    - Updating to Monterey breaks BlueTooth, use [`BlueToolFixup.kext`](https://github.com/acidanthera/BrcmPatchRAM/release) instead of `IntelBluetoothInjector.kext`, refer to [OC guide](https://dortania.github.io/OpenCore-Install-Guide/extras/monterey.html#bluetooth) for details
     - Note that the BT device is connected to an internal USB port so USBMapping should be applied in order for BT to work.
-    - Even though all above steps are done, BT does not work on 12.3.1, but resume working on 12.4
+    - Reset NVRAM if BT not working, seems like entry `bluetoothInternalControllerInfo` may change or break when switching Windows and macOS
 - **Audio** use `layout-id | Number | 11` for ALC1200 device path at `PciRoot(0x0)/Pci(0x1F,0x3)`
 - **iGPU** needs extra configs to work properly. Refer to [OpenCore doc](https://dortania.github.io/OpenCore-Post-Install/gpu-patching/intel-patching/), [WhateverGreen readme](https://github.com/acidanthera/WhateverGreen) [manual](https://github.com/acidanthera/WhateverGreen/tree/master/Manual) and [a more thorough guide on tmx86](https://www.tonymacx86.com/threads/guide-general-framebuffer-patching-guide-hdmi-black-screen-problem.269149/)
     - device path is at `PciRoot(0x0)/Pci(0x2,0x0)`.
@@ -83,15 +83,15 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
     - HDMI/DP digital audio output is related to iGPU config. Though video output is fine, digital audio only works when connecting both onboard HDMI and DP ports. Connecting only one of them or disconnecting either one will result in the audio device failing to refresh, thus front panel headphone jack will not work. From this discussion
 - **USB Mapping**
     - Follow the OpenCore guide
-    - Use [USBToolBox](https://github.com/USBToolBox/tool) on Windows to workaround the issue that `Kernel-Quirks-XhciPortLimit` no longer works on macOS 11.3+
-    - Use a USB flash drive to detect each port and its HS/SS index
-    - Some ports may be connected internally eg. MSI Mystic Light
-    - Some are connected directly to Motherboard eg. Corsair iCUE H150i RGB PRO XT AIO CPU Cooler
-    - Select in-use and desired ports, set corresponding types then generate the kext
-- **Memory** works, also stable with OC 4000MHz 17-19-19-40
+    - Use [USBToolBox](https://github.com/USBToolBox/tool) on Windows, since `Kernel-Quirks-XhciPortLimit` no longer works on macOS 11.3+
+        - Use a USB flash drive to detect each port and coresponding HS/SS index
+        - Some ports are connected directly on motherboard PCB eg. MSI Mystic Light, assign internal type to it
+        - Some ports connectors are on motherboard
+        - Select ports, set types then generate the kext
+- **Memory** works, could OC to 4000MHz 17-19-19-40
 - **Hard Disk**
     - NVMe and HDD work fine
-    - TRIM support for SATA SSD is turned off by default. Its performance may be affected. However, turning it on may be unstable. To turn on TRIM
+    - TRIM support for SATA SSD is turned off by default. The performance may be affected. However, some say APFS do not TRIM, since both have garbage collection mechanism. To turn on TRIM
         
         `sudo trimforce enable`
         
@@ -100,7 +100,7 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
     - Default *SMBIOS* `iMac20,2` failed to play Apple Music Lossless and Dolby Atmos tracks
     - Changing to a previous *SMBIOS* can resolve this issue, eg. `iMacPro1,1 MacPro7,1 iMac17,2`, which may have different ways to process DRM content
     - Changing *SMBIOS* invalidates USB Mapping. Either remap the ports or just replace the text `iMac20,2` to `iMacPro1,1` in `USBMap.kext/Contents/Info.plist` will do
-    - and GPU acceleration does not work as changing to `iMacPro1,1` make macOS treat iGPU as dGPU
+    - and GPU acceleration does not work once changing to `iMacPro1,1` since macOS will treat iGPU as dGPU
 - **DRM** is not supported by iGPU only setup, refer to [this guide](https://dortania.github.io/OpenCore-Post-Install/universal/drm.html)
 
 ## Update
@@ -110,7 +110,7 @@ Updated to ~~Big Sur 11.6~~ Monterey 12.4
     - Drivers: OC release, see [OpenCore-x.x.x-RELEASE.zip](https://github.com/acidanthera/OpenCorePkg/releases); Closed source [drivers](https://github.com/acidanthera/OcBinaryData/tree/master/Drivers)
     - Kexts: Precompiled [Kext Repo](http://kexts.goldfish64.com/).
     - OC efi: OC release
-- Most resources (efi, Kexts) can be updated through [OCAuxiliaryTools](https://github.com/ic005k/OCAuxiliaryTools/) and [OpenCore Configurator](https://mackie100projects.altervista.org/download-opencore-configurator/)
+- Most resources (efi, Kexts) can be updated within [OCAuxiliaryTools](https://github.com/ic005k/OCAuxiliaryTools/) and [OpenCore Configurator](https://mackie100projects.altervista.org/download-opencore-configurator/)
 - To update macOS
     - if SIP is enabled and system snapshots are intact,  → System Preferences → Software Update should work and show notifications of system updates
     - Otherwise, make a complete macOS install from App Store
